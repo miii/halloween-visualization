@@ -164,7 +164,7 @@ function animate(highResTimestamp) {
 		runSpiralAnimation();
 	}
 
-	if (typeof controller !== 'undefined') {
+	if (typeof controller !== 'undefined' && controller !== null) {
 		controller.onUpdateTimers(
 			(eyeAnimationInterval * 1000) - (highResTimestamp - EyeAnimationLastRecord)
 		);
