@@ -337,6 +337,7 @@ html, body {
 	left: 50%;
 	top: 50%;
 	margin: -45vh 0 0 -30vh;
+	cursor: pointer;
 }
 
 #character img {
