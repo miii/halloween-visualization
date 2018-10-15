@@ -1,0 +1,368 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,300,100,500);
+
+@-webkit-keyframes paralax_hide {
+	0% {
+		-webkit-transform: translate(0, 0);
+	}
+	100% {
+		-webkit-transform: translate(0, 100vh);
+	}
+}
+
+@-webkit-keyframes paralax_show {
+	0% {
+		-webkit-transform: translate(0, 100vh);
+	}
+	100% {
+		-webkit-transform: translate(0, 0);
+	}
+}
+
+@-webkit-keyframes rotating {
+    from{
+        -webkit-transform: rotate(0deg);
+    }
+    to{
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@-webkit-keyframes waves {
+    from{
+        background-position: 0% 0%;
+    }
+    to{
+        background-position: 100% 0%;
+    }
+}
+
+@-webkit-keyframes clouds {
+    from{
+        -webkit-transform: translate(0vw, 0);
+    }
+    to{
+        -webkit-transform: translate(110vw, 0);
+    }
+}
+
+@-webkit-keyframes clouds2 {
+    from{
+        -webkit-transform: translate(100vw, 0);
+    }
+    to{
+        -webkit-transform: translate(-200px, 0);
+    }
+}
+
+@-webkit-keyframes brightness {
+    0% {
+        -webkit-filter: brightness(4);
+    }
+    30% {
+        -webkit-filter: brightness(1);
+    }
+}
+
+@-webkit-keyframes waves_vertical {
+	0% {
+		-webkit-transform: translate(0, 0);
+	}
+	30% {
+		-webkit-transform: translate(0, 5px);
+	}
+	70% {
+		-webkit-transform: translate(0, 0);
+	}
+}
+
+@-webkit-keyframes boat {
+	0% {
+		margin-left: 100vw;
+	}
+	60%, 100% {
+		margin-left: -400px;
+	}
+}
+
+@-webkit-keyframes boat_rotate {
+	0% {
+		-webkit-transform: rotate(8deg);
+	}
+	25% {
+		-webkit-transform: rotate(5deg) translate(0, 2px);
+	}
+	40% {
+		-webkit-transform: rotate(11deg) translate(0, 5px);
+	}
+	75% {
+		-webkit-transform: rotate(0deg) translate(0, -3px);
+	}
+	100% {
+		-webkit-transform: rotate(8deg);
+	}
+}
+
+@-webkit-keyframes moon {
+	0%, 30% {
+		-webkit-filter: none;
+	}
+	35% {
+		-webkit-filter: hue-rotate(-20deg);
+		-webkit-transform: none;
+	}
+	40% {
+		-webkit-filter: hue-rotate(-55deg) saturate(2.5);
+	}
+	45%, 55% {
+		-webkit-filter: hue-rotate(-60deg) saturate(6);
+		-webkit-transform: scale(1.1, 1.1);
+	}
+	60% {
+		-webkit-filter: hue-rotate(-55deg) saturate(2.5);
+	}
+	65% {
+		-webkit-filter: hue-rotate(-20deg);
+		-webkit-transform: none;
+	}
+	70%, 100% {
+		-webkit-filter: none;
+	}
+}
+
+@-webkit-keyframes explore {
+	0% {
+		-webkit-transform: translate(0, 0);
+	}
+	5%, 10% {
+		-webkit-transform: translate(-25px, 2px);
+	}
+	17.5% {
+		-webkit-transform: translate(-15px, 8px);
+	}
+	25% {
+		-webkit-transform: translate(0, 8px);
+	}
+	32.5% {
+		-webkit-transform: translate(15px, 8px);
+	}
+	42%,58% {
+		-webkit-transform: translate(25px, 2px);
+	}
+	62.5% {
+		-webkit-transform: translate(15px, 8px);
+	}
+	75% {
+		-webkit-transform: translate(0, 8px);
+	}
+	82.5% {
+		-webkit-transform: translate(-15px, 8px);
+	}
+	90%, 95% {
+		-webkit-transform: translate(-25px, 2px);
+	}
+	100% {
+		-webkit-transform: translate(0, 0);
+	}
+}
+
+@-webkit-keyframes weather {
+	0%, 30% {
+		opacity: 0;
+	}
+	40%, 60% {
+		opacity: 1;
+	}
+	70%, 100% {
+		opacity: 0;
+	}
+}
+
+@-webkit-keyframes witch {
+	0% {
+		width: 100px;
+		-webkit-transform: rotate(40deg);
+	}
+	1.8% {
+		margin-top: 20vh;
+		-webkit-transform: rotate(15deg);
+	}
+	4%, 100% {
+		width: 120px;
+		right: -200px;
+		margin-top: 35vh;
+		-webkit-transform: rotate(0deg);
+	}
+}
+
+html, body {
+	overflow: hidden;
+}
+
+.fit img {
+	width: 100%;
+}
+
+#background {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	background: #0e1517;
+}
+
+	.weather {
+		width: 100vw;
+		height: 100vh;
+		-webkit-mask-image: -webkit-gradient(
+		    linear, left top, left bottom, 
+		    color-stop(0.00,  rgba(0,0,0,0)),
+		    color-stop(1.00,  rgba(0,0,0,1))
+		);
+		position: fixed;
+		top: 0;
+		-webkit-animation: weather 120s linear infinite;
+	}
+
+#scene1,
+#scene2 {
+	position: fixed;
+	top: 0;
+}
+
+#scene1 {
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	margin-left: -679px;
+	margin-top: -675px;
+}
+
+#scene1 {
+	-webkit-animation: rotating 5s linear infinite;
+	opacity: 0;
+}
+
+#scene2 {
+	opacity: 1;
+}
+
+.stars {
+	width: 100%;
+	opacity: 0.5;
+	height: 350px;
+	margin-top: -20px;
+	position: absolute;
+	background-image: url('../images/stars.png');
+}
+
+.moon {
+	width: 314px;
+	height: 314px;
+	margin-left: 10px;
+	margin-top: 10px;
+	-webkit-animation: moon 300s linear infinite;
+}
+
+.cloud1 {
+	width: 90px;
+	height: 71px;
+	position: absolute;
+	top: 150px;
+	margin-left: -90px;
+	-webkit-animation: clouds 180s linear infinite;
+}
+
+.cloud2 {
+	width: 192px;
+	height: 148px;
+	position: fixed;
+	top: 160px;
+	-webkit-animation: clouds2 140s linear infinite;
+}
+
+.cloud3 {
+	width: 150px;
+	height: 117px;
+	position: absolute;
+	top: 205px;
+	margin-left: -300px;
+	-webkit-animation: clouds 90s linear infinite;
+}
+
+.boat_old {
+	width: 310px;
+	margin-top: -200px;
+	position: absolute;
+	bottom: 110px;
+	-webkit-animation: boat 30s linear infinite, boat_rotate 8s linear infinite;
+}
+
+.boat {
+	width: 370px;
+	position: absolute;
+	bottom: 45px;
+	-webkit-animation: boat 80s linear infinite, boat_rotate 8s linear infinite;
+}
+
+.waves1,
+.waves3 {
+	background-image: url('../images/wave1.png');
+	width: 100%;
+	height: 132px;
+	position: absolute;
+	bottom: -30px;
+}
+
+.waves1 {
+	-webkit-animation: waves 25s linear infinite, waves_vertical 11s linear infinite;
+}
+
+.waves2 {
+	background-image: url('../images/wave2.png');
+	width: 100%;
+	height: 132px;
+	position: absolute;
+	bottom: 35px;
+	-webkit-animation: waves 33s linear infinite, waves_vertical 7s linear infinite;
+}
+
+.waves3 {
+	bottom: 95px;
+	-webkit-animation: waves 50s linear infinite, waves_vertical 4s linear infinite;
+}
+
+#character {
+	height: 90vh;
+	position: relative;
+	left: 50%;
+	top: 50%;
+	margin: -45vh 0 0 -30vh;
+}
+
+#character img {
+	top: 0;
+	height: 100%;
+	position: absolute;
+}
+
+	.eyes {
+		display: none;
+	}
+
+#paralax2 {
+	top: 0;
+	position: fixed;
+}
+
+.paralaxcontainer {
+	position: relative;
+	width: 100vw;
+	height: 100vh;
+}
+
+.witch {
+	-webkit-animation: witch 200s linear infinite;
+	position: absolute;
+	right: 100vw;
+	top: 0;
+}

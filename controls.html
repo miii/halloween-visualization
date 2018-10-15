@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf8">
+	<title>Kontrollera visuals</title>
+<link href="css/reset.css" rel="stylesheet" type="text/css">
+<style>
+@import url(https://fonts.googleapis.com/css?family=Roboto:300);
+
+html, body {
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 15px;
+}
+
+#wrapper {
+	max-width:400px;
+	margin: 20px;
+}
+
+input {
+	width: 150px;
+	text-align: center;
+	padding: 8px 10px;
+	margin-left: 10px;
+	margin-bottom: 10px;
+}
+
+input[type=submit] {
+	width: 100px;
+}
+
+.shaketoggle,
+.shake,
+#tap {
+	color: red;
+	text-align: center;
+	font-size: 16px;
+	background: red;
+	line-height: 35px;
+	color: #FFF;
+	margin: 10px 0 0 0;
+	display: none
+}
+
+.shake {
+	background: green;
+}
+
+#tap {
+	background: black;
+}
+
+#extendedbeats {
+	background: #00F;
+}
+
+h1 {
+	text-align: center;
+	font-size: 28px;
+	font-weight: bold;
+	margin-bottom: 20px;
+}
+
+pre {
+	font-family: monospace;
+	font-size: 12px;
+	margin: 5px 0;
+}
+
+sup {
+	vertical-align: super;
+	font-size: 0.6em;
+}
+
+#automode {
+	width: 30px;
+}
+
+a {
+	color: #FFF;
+	text-decoration: none;
+	padding: 0 4px;
+	background: #000;
+	border-radius: 3px;
+	margin: 0 3px;
+}
+
+#timeout {
+	padding: 8px;
+	border: 1px solid #CCC;
+	background: #EEE;
+	display: block;
+	text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div id="wrapper">
+	<h1>Kontrollera visuals <sup>(<a href="javascript:setTimeOffset()">0</a>ms offset)</sup></h1>
+	<pre>
+Automode:	Stängs av automatiskt efter 16 bars
+		samt pausar vid fills.
+-------------------------------------------
+Space:		Skickar enskild shake.
+Caps Lock:	Skickar shake kontinuerligt i vald BPM.
+CTRL:		Få fram BPM genom att trycka i takt.
+-------------------------------------------
+Alt:		Aktivera/inaktivera automode på shakes.
+Shift:		Aktiverar förlängt automode (24 bars).
+Tab:		Skickar shake kontinuerligt om 1 bar.
+End:		Håll in för att inaktivera shake tillfälligt.
+Page Up/Down	Synca shakes +/- 25ms
+-------------------------------------------
+ESC:		Försöker avbryta pågående animationer.
+		Dubbeltryck laddar om visualiseringen.
+	</pre>
+	<form id="bpmform">
+		<input type="checkbox" name="automode" id="automode" checked> Aktivera automode på shakes<br>
+		<span>BPM: </span>
+		<input type="number" min="60" max="200" value="128" id="bpm">
+		<input type="submit" id="submit" value="Uppdatera"><br>
+	</form>
+	<span id="timeout">Ögonanimation visas om <a id="logotimer">-</a> sekunder</span>
+
+	<h6 id="shaketoggle" class="shaketoggle">Shake aktiverad</h6>
+	<h6 id="extendedbeats" class="shake">Förlängt automode aktiverat</h6>
+	<h6 id="shake" class="shake">Shake skickad</h6>
+	<h6 id="connected" class="shake">Återansluten</h6>
+	<h6 id="tap">Beräknar BPM</h6>
+	<h6 id="logoanimation" class="shaketoggle">Ögonanimation körs</h6>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script>
+
+var ready = true;
+
+shake = false;
+logoAnimationIsActive = false;
+cssfix = false;
+
+$(document).ready(function() {
+
+	$('h1 sup a').text(opener.timeOffset);
+
+	$(document).on('keydown', function(e) {
+		var key = (e.keyCode ? e.keyCode : e.which);
+		switch(key) {
+
+			// Single shake
+			case 32:
+				opener.runShake();
+				$('#shake').show();
+				setTimeout(function() { $('#shake').hide(); }, 200);
+				break;
+
+			// Toggle shake
+			case 20:
+				if (logoAnimationIsActive)
+					return false;
+
+				if (shake) {
+					shake = false;
+					$('#shaketoggle, #extendedbeats').hide();
+				} else {
+					shake = true;
+					$('#shaketoggle').show();
+				}
+
+				opener.toggleShake();
+				break;
+			
+			// Extended automode
+			case 16:
+				if (shake || opener.extendedBeats == 32) {
+					opener.extendedBeats = opener.extendedBeats == 0 ? 32 : 0;
+					$('#extendedbeats').toggle();
+				}
+				break;
+
+			// Timed shakes
+			case 9:
+				if (logoAnimationIsActive)
+					return false;
+
+				if (!shake) {
+					opener.timedAutomode();
+					shake = true;
+					$('#shaketoggle').show();
+				}
+				break;
+			
+			// Toggle automode
+			case 18:
+				if ($('#automode').is(':checked'))
+					$('#automode').prop('checked', false);
+				else
+					$('#automode').prop('checked', true);
+
+				$('#bpm').submit();
+				break;
+			
+			// ICE/ESC
+			case 27:
+				opener.ICE(window);
+				$('h6').hide();
+				shake = false;
+				logoAnimationIsActive = false;
+				break;
+			
+			// Skip beat
+			case 35:
+				opener.skipBeat = true;
+				break;
+
+			// Toggle 4x3 mode
+			case 36:
+				cssfix = cssfix ? false : true;
+				opener.cssfix('4x3');
+				break;
+
+			default:
+				return;
+		}
+
+		e.preventDefault();
+		return false;
+	});
+
+	$(document).on('keyup', function(e) {
+
+		var key = (e.keyCode ? e.keyCode : e.which);
+		switch (key) {
+			// Skip beat
+			case 35:
+				opener.skipBeat = false;
+				break;
+
+			// Sync +
+			case 33:
+				if (shake)
+					opener.sync += 1;
+				break;
+
+			// Sync -
+			case 34:
+				if (shake)
+					opener.sync -= 1;
+				break;
+		}
+
+	});
+
+	$(document).on('keydown', function(e) {
+
+		var key = (e.keyCode ? e.keyCode : e.which);
+		switch (key) {
+			// Tap bpm
+			case 17:
+				tap();
+				$('#tap').show();
+				setTimeout(function() { $('#tap').hide(); }, 100);
+		}
+
+	});
+
+	$('#bpmform').submit(function() {
+		opener.bpm = $('#bpm').val();
+		opener.automode = $('#automode').is(':checked') ? true : false;
+		return false;
+	});
+
+});
+
+var taps = new Array();
+
+function tap() {
+
+	var time = new Date().getTime();
+
+	if (time - taps[taps.length - 1] > 1000)
+		taps = new Array(); // Reset taps if outdated
+
+	taps[taps.length] = time;
+
+	// Uppdatera bpm
+	if (taps.length >= 4) {
+
+		limit = (taps.length > 16 ? 16 : taps.length);
+		taps.reverse();
+
+		for (i = 0, sum = 0; i < limit - 1; i++) {
+			sum += taps[i] - taps[i+1];
+		}
+
+		taps.reverse();
+		avgdiff = sum / (1000 * (limit - 1));
+		bpm = Math.round(60 / avgdiff);
+
+		$('#bpm').val(bpm);
+
+	}
+
+}
+
+function onShakeDisabled() {
+	$('#shaketoggle, #extendedbeats').hide();
+	shake = false;
+}
+
+function onLogoAnimationStart() {
+	$('#logoanimation').show();
+	logoAnimationIsActive = true;
+}
+
+function onLogoAnimationDone() {
+	$('#logoanimation').hide();
+	logoAnimationIsActive = false;
+}
+
+function onUpdateTimers(logoMs) {
+	var sec = Math.floor(logoMs / 1000);
+	$('#logotimer').text(sec > 0 ? sec : 0);
+}
+
+function reconnect() {
+	setTimeout(function() {
+		if (typeof opener.connect != 'function')
+			return setTimeout(reconnect, 20);
+
+		opener.connect(this);
+		$('#bpmform').submit();
+
+		$('#connected').show();
+		setTimeout(function() { $('#connected').hide(); }, 5000);
+
+		if (cssfix)
+			opener.cssfix('4x3', true);
+
+	}, 10);
+}
+
+function setTimeOffset() {
+	var timeOffset = prompt("Välj offset",  opener.timeOffset);
+	if (timeOffset != null) {
+		opener.setTimeOffset(parseInt(timeOffset));
+		$('h1 sup a').text(timeOffset);
+	}
+}
+
+window.onbeforeunload = function() {
+	return "Är du säker på att du vill stänga det här fönstret?\nEftertext kommer att startas automatiskt!";
+}
+
+window.onunload = function(){
+    opener.runCaptions();
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf8">
+<title>Trappan</title>
+<link href="css/reset.css" rel="stylesheet" type="text/css">
+<link href="css/visuals.css" rel="stylesheet" type="text/css">
+<link href="css/weather.min.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+<div id="background"></div>
+
+<div id="scene1">
+	<img src="images/hypnosis_spiral.png" alt="">
+</div>
+
+<div id="scene2">
+	<div class="stars"></div>
+	
+	<div id="paralax1">
+		<div class="paralaxcontainer">
+			<div class="moon fit">
+				<img src="images/moon.png" alt="">
+			</div> 
+
+			<img src="images/witch.png" class="witch" alt="">
+
+			<div class="cloud1 fit bolt"><img src="images/cloud_size1.png" alt=""></div>
+			<div class="cloud2 fit bolt"><img src="images/cloud_size3.png" alt=""></div>
+			<div class="cloud3 fit bolt"><img src="images/cloud_size2.png" alt=""></div>
+		</div>
+	</div>
+
+	<div id="paralax2">
+		<div class="paralaxcontainer bolt">
+			<div class="waves3"></div>
+			<div class="boat fit">
+				<img src="images/boat2.png" alt="">
+			</div>
+			<div class="waves2"></div>
+			<!--<div class="weather rain"></div>-->
+			<div class="waves1"></div>
+		</div>
+	</div>
+</div>
+
+<div id="character">
+	<img class="character" src="images/character.png" alt="">
+	<img class="hat_line" src="images/hat_line.png" alt="">
+	<img class="logo_3cant" src="images/character_3cant_logo.png" alt="">
+	<img class="eyes" src="images/character_eyes2.png" alt="">
+</div>
+
+<script src="js/jquery-2.1.4.min.js"></script>
+<script src="js/color-thief.js"></script>
+<script>
+
+// V2
+var boltAnimationInterval = 113;
+var eyeAnimationInterval = 220;
+var spiralAnimationInterval = 350;
+
+var controller;
+var colorThief = new ColorThief();
+
+var bpm = 128;
+var interval = 60 / bpm * 1000;
+
+var toggleShakeEnable = false;
+var toggleShakeIsEnabled = false;
+var toggleShakeCount = 0;
+var toggleShakeStart = 0;
+
+var toggleShakeDelta;
+var toggleShakeLastRecord;
+var EyeAnimationLastRecord;
+var BoltAnimationLastRecord;
+var SpiralAnimationLastRecord;
+
+var skipBeat = false;
+var eyeAnimationQueued = false;
+var extendedBeats = 0;
+var automode = true;
+var timeOffset = -50;
+var sync = 0;
+
+var kill = false;
+
+function animate(highResTimestamp) {
+
+	// Show captions
+	if (kill)
+		return;
+
+
+	requestAnimationFrame(animate);
+
+	if (!EyeAnimationLastRecord) {
+		EyeAnimationLastRecord = highResTimestamp;
+		BoltAnimationLastRecord = highResTimestamp;
+		SpiralAnimationLastRecord = highResTimestamp;
+	}
+
+
+	////////////////////////////////////////////////////
+
+	if (toggleShakeEnable) {
+		toggleShakeEnable = false;
+		toggleShakeIsEnabled = true;
+
+		toggleShakeStart = highResTimestamp + timeOffset;
+		toggleShakeLastRecord = toggleShakeStart;
+
+		toggleShakeCount = 1;
+		extendedBeats = 0;
+
+		runShake();
+	}
+
+	////////////////////////////////////////////////////
+
+	// Sync feature
+	if (sync != 0) {
+		toggleShakeStart += 25 * sync;
+		toggleShakeLastRecord += 25 * sync;
+		sync = 0;
+	}
+
+	interval = 60 / bpm * 1000;
+	toggleShakeDelta = highResTimestamp - toggleShakeLastRecord;
+
+	if (toggleShakeIsEnabled && toggleShakeDelta > interval) {
+		toggleShakeLastRecord = highResTimestamp - (toggleShakeDelta % interval);
+
+		toggleShakeCount = 1 + Math.floor((highResTimestamp - toggleShakeStart) / interval);
+
+		// Skip beat feature
+		if (skipBeat)
+			return;
+
+		// Automode feature
+		var shake = true;
+		if (automode)
+			shake = runAutomode();
+
+		// Shake
+		if (shake)
+			runShake();
+	}
+
+	////////////////////////////////////////////////////
+
+	if (highResTimestamp - EyeAnimationLastRecord > eyeAnimationInterval * 1000) {
+		EyeAnimationLastRecord = highResTimestamp - (highResTimestamp % eyeAnimationInterval);
+		runEyeAnimation();
+	}
+	if (highResTimestamp - BoltAnimationLastRecord > boltAnimationInterval * 1000) {
+		BoltAnimationLastRecord = highResTimestamp - (highResTimestamp % boltAnimationInterval);
+		runBoltAnimation();
+	}
+	if (highResTimestamp - SpiralAnimationLastRecord > spiralAnimationInterval * 1000) {
+		SpiralAnimationLastRecord = highResTimestamp - (highResTimestamp % spiralAnimationInterval);
+		runSpiralAnimation();
+	}
+
+	if (typeof controller !== 'undefined') {
+		controller.onUpdateTimers(
+			(eyeAnimationInterval * 1000) - (highResTimestamp - EyeAnimationLastRecord)
+		);
+	}
+
+}
+
+requestAnimationFrame(animate);
+
+function toggleShake() {
+	if (toggleShakeIsEnabled) {
+		toggleShakeIsEnabled = false;
+		$('.eyes').animate({
+			opacity: 0
+		}, 1000, function() {
+			$(this).hide().css('opacity', 1);
+		});
+	}
+	else {
+		toggleShakeEnable = true;
+		$('.eyes').show();
+	}
+
+}
+
+function runAutomode() {
+
+	if (toggleShakeCount > 64 + extendedBeats) {
+		toggleShake();
+		controller.onShakeDisabled();
+
+		if (Math.random() > 0.2)
+			setTimeout(runBoltAnimation, 6000);
+
+		return false;
+	}
+
+	// Drop fills
+
+	if (toggleShakeCount % 32 == 31) {
+		$('.eyes').css('-webkit-filter', 'hue-rotate(-50deg) saturate(2) brightness(3)');
+		setTimeout(function() {
+			$('.eyes')
+				.css('-webkit-transition-duration', interval/1000 + 's')
+				.css('-webkit-filter', 'hue-rotate(0deg)')
+				.delay(interval - 10)
+				.queue(function() {
+					$(this).css('-webkit-transition-duration', '0s').dequeue();
+				});
+		}, 5);
+
+		return false;
+	}
+
+	else if (toggleShakeCount % 32 == 0) {
+		$('.eyes').css('-webkit-filter', 'hue-rotate(-50deg) saturate(2) brightness(3)');
+		setTimeout(function() {
+			$('.eyes')
+				.css('-webkit-transition-duration', interval/1000 + 's')
+				.css('-webkit-filter', 'hue-rotate(0deg)')
+				.delay(interval - 10)
+				.queue(function() {
+					$(this).css('-webkit-transition-duration', '0s').dequeue();
+				});
+		}, 10);
+
+		return false;
+	}
+
+	else if (toggleShakeCount % 16 == 0) {
+		runBoltAnimation();
+	}
+
+	return true;
+}
+
+function runShake() {
+
+	var cssinterval = interval / 1000;
+	$('#character img, #scene1 img').css('-webkit-transform', 'scale(1.05)');
+	$('#scene2').css('-webkit-transform', 'scale(1.01)');
+	$('.logo_3cant, .eyes, .hat_line').css('-webkit-filter', 'brightness(4)');
+
+	setTimeout(function() {
+		$('#character img, #scene1 img, #scene2').css('-webkit-transition-duration', interval/3000 + 's').css('-webkit-transform', 'scale(1)').delay(interval/4).queue(function() {
+			$(this).css('-webkit-transition-duration', '0s').dequeue();
+		});
+		$('.logo_3cant, .eyes, .hat_line').css('-webkit-transition-duration', interval/3000 + 's').css('-webkit-filter', 'brightness(1)').delay(interval/4).queue(function() {
+			$(this).css('-webkit-transition-duration', '0s').dequeue();
+		});
+	}, 10);
+
+}
+
+function timedAutomode() {
+
+	$('.eyes').css('opacity', 0).show();
+	$('.eyes').animate({
+		opacity: 1
+	}, interval*3);
+
+	setTimeout(toggleShake, interval*4);
+}
+
+function runSpiralAnimation() {
+	$('.stars, #paralax1').animate({
+		opacity: 0
+	}, 2000);
+	$('#paralax2').css('-webkit-animation', 'paralax_hide 6s linear forwards');
+
+	setTimeout(function() {
+		$('#scene1').animate({
+			opacity: 0.05
+		}, 2000);
+	}, 1000);
+
+	setTimeout(function() {
+		$('#paralax2').css('-webkit-animation', 'paralax_show 6s linear forwards');
+		setTimeout(function() {
+			$('#scene1').animate({
+				opacity: 0
+			}, 2000);
+			setTimeout(function() {
+				$('.stars, #paralax1').animate({
+					opacity: 1
+				}, 2000);
+			}, 2000);
+		}, 2000);
+	}, 30000);
+}
+
+function runEyeAnimation() {
+
+	// Prevent multiple effects at once
+	if (toggleShakeIsEnabled) {
+		eyeAnimationQueued = true;
+		setTimeout(runEyeAnimation, 10000);
+		return;
+	}
+
+	controller.onLogoAnimationStart();
+	eyeAnimationQueued = false;
+
+	$('.eyes').css('-webkit-filter', 'hue-rotate(-50deg)').css('opacity', 0).show().animate({
+		opacity: 1
+	}, 2000, function() {
+		setTimeout(function() {
+			$('.eyes').css('-webkit-animation', 'explore 15s linear');
+			setTimeout(function() {
+				$('.eyes').css('-webkit-animation', 'none');
+				$('.eyes').animate({
+					opacity: 0
+				}, 1000, function() {
+					$(this).css('-webkit-filter', 'none').css('opacity', 1).hide();
+					controller.onLogoAnimationDone();
+				});
+			}, 18000);
+		}, 1000);
+	});
+}
+
+function runBoltAnimation(kill) {
+	kill = kill || false;
+
+	$('.bolt').css('-webkit-filter', 'brightness(4)');
+	$('#background, #character').css('-webkit-filter', 'brightness(2)');
+
+	setTimeout(function() {
+		$('.bolt, #background, #character').css('-webkit-filter', 'none');
+
+		if (!kill)
+			setTimeout(function() {
+				runBoltAnimation(true);
+			}, 100);
+	}, 100);
+}
+
+var solver = false;
+function ICE(context) {
+	if (!solver) {
+		solver = true;
+		toggleShakeIsEnabled = false;
+		setTimeout(function() {solver = false}, 200);
+		return;
+	}
+
+	context.reconnect();
+	location.reload();
+}
+
+function connect(context) {
+	controller = context;
+	return true;
+}
+
+function setTimeOffset(offset) {
+	timeOffset = offset;
+	localStorage.timeOffset = offset;
+}
+
+function cssfix(stylesheet, remove) {
+	if (remove != null) {
+		if (remove)
+			$('link[title=' + stylesheet + ']').remove();
+		else if (!$('link[title=' + stylesheet + ']').length)
+			$('head').append('<link title="' + stylesheet + '" href="css/' + stylesheet + '.css" rel="stylesheet" type="text/css">');
+		return;
+	}
+
+	if ($('link[title=' + stylesheet + ']').length)
+		$('link[title=' + stylesheet + ']').remove();
+	else
+		$('head').append('<link title="' + stylesheet + '" href="css/' + stylesheet + '.css" rel="stylesheet" type="text/css">');
+}
+
+$(document).ready(function() {
+
+	$('body').height($(window).height());
+
+	$('.logo_3cant').click(function() {
+		controller = window.open('controls.html', '_blank', 'width=440,height=470');
+	});
+
+	if (localStorage.timeOffset != null)
+		timeOffset = parseInt(localStorage.timeOffset);
+
+	/*$(window).resize(function() {
+		if (($(window).width() / $(window).height()) < 3/2)
+			cssfix('4x3', false);
+		else
+			cssfix('4x3', true);
+	});*/
+
+	$(window).trigger('resize');
+	
+	controller = window.open('controls.html', '_blank', 'width=440,height=470');
+
+});
+
+</script>
+</body>
+</html>

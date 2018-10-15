@@ -1,0 +1,17 @@
+#caption h1,
+img {
+	transform: scale(1, 1.3333333333333333);
+}
+
+iframe {
+	transform: scale(0.75, 1);
+}
+
+#trappan {
+	width: 10vh;
+	bottom: 30px;
+}
+
+#image {
+	margin-top: 24vh;
+}

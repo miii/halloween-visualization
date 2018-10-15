@@ -1,0 +1,11 @@
+.logo_3cant {
+	-webkit-animation: flash 0.4685s linear infinite, scale 0.4685s linear infinite;
+}
+
+.eyes {
+	-webkit-animation: flash 0.4685s linear infinite, scale 0.4685s linear infinite;
+}
+
+.character {
+	-webkit-animation: scale 0.4685s linear infinite;
+}
